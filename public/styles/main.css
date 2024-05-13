@@ -1,0 +1,26 @@
+body, html {
+    height: 100%;
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+}
+
+input {
+    height: 1.5rem;
+    width: 10rem;
+    border-radius: 10px;
+    border: 1px solid black;
+    margin: 5px;
+    background-color: darkgrey;
+}
+
+form {
+    text-align: center;
+}
+
+p {
+    font-size: large;
+    font-weight: bold;
+}

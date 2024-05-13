@@ -1,0 +1,159 @@
+    <!-- Intestazione per i post degli utenti -->
+    <h2>User Posts</h2>
+    <div>
+    <!-- Se ci sono dei post... -->
+    <% if (posts) { %>
+        <div class="card-header">
+            <!-- Per ogni elemento nell'array dei post... -->
+            <% posts.forEach(function(element) { %>
+                <!-- Se l'elemento ha del contenuto... -->
+                <% if (element.content != ''){ %>
+                    <!-- Crea una sezione per il post -->
+                    <div class="card custom-card-background" data-id="<%= element.id %>" style="margin-top: 5%;">
+                        <div class="card-body">
+                            <!-- Aggiungi un'icona "🔝" se il post è un top topic -->
+                            <% if (element.topTopicQueryResult !== undefined) {%>             
+                                <h2 class="card-title" data-id="<%= element.id %>"> <%= element.title + "🔝" %> </h2>
+                            <%} else { %>
+                                <h2 class="card-title" data-id="<%= element.id %>"> <%= element.title%></h2>
+                            <% } %>
+
+                            <!-- Contenuto del post -->
+                            <p class="card-text" data-id="<%= element.id %>"><%= element.content %></p>
+
+                            <!-- Bottone per modificare il post -->
+                            <span class="btn btn-primary" onclick="modificaPost('<%= element.id %>')">&#9998;</span>
+
+                            <span class="btn btn-danger" id="openPopupBtn" onclick="eldiminaPost('<%= element.id %>')">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                                    <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                                </svg>
+                            </span>
+                            <div id="customPopup" class="popup">
+                                <div class="popup-content">
+                                    <div style="width: 18rem;">
+                                        <div class="card-body" style="background-color: #EEEEEE;">
+                                            <h5 class="card-title">Sei sicuro di voler eliminare il post ?</h5>
+                                            <button id="confirmDeleteBtn" class="btn btn-danger" onclick="eliminaPost('<%= element.id %>')">Conferma</button>
+                                            <button id="cancelDeleteBtn" class="btn btn-primary" onclick="closePopup()">Annulla</button>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="text-end">
+                                <p>By: <%= element.owner %></p>
+                            </span>
+                        </div>
+                    </div>    
+                <% } %>
+            <% }); %>
+        </div>
+    <% } %>
+</div>
+<script>
+    //Funzione pulsante eliminazione post
+
+        const openPopupBtn = document.getElementById('openPopupBtn');
+        const customPopup = document.getElementById('customPopup');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+
+        openPopupBtn.addEventListener('click', () => {
+            customPopup.style.display = 'block';
+        });
+
+        function closePopup() {
+            customPopup.style.display = 'none';
+            confirmDeleteBtn.removeEventListener('click', deleteData);
+            cancelDeleteBtn.removeEventListener('click', closePopup);
+        }
+
+        function deleteData() {
+            // Qui puoi inserire la logica per eliminare effettivamente il dato
+            console.log('Dato eliminato con successo!');
+            customPopup.style.display = 'none';
+        }
+
+
+    // Funzione per modificare un post
+    function modificaPost(postId) {
+        // Chiedi all'utente il nuovo contenuto del post
+        const nuovoTitolo = prompt("Modifica il titolo del post:");
+        const nuovoContenuto = prompt("Modifica il testo del post:");
+
+        // Se l'utente ha inserito un valore...
+        if (nuovoContenuto !== null || nuovoTitolo !== null) {
+            // Effettua una richiesta POST per modificare il post sul server
+            fetch('/modifica-post', {
+                method: 'POST',
+                body: JSON.stringify({ nuovoContenuto: nuovoContenuto, postId: postId, nuovoTitolo: nuovoTitolo }),
+                headers: {'Content-Type': 'application/json'}
+            })
+            .then(response => {
+                // Se la risposta è ok...
+                if (!response.ok) {
+                    throw new Error('Errore nella richiesta.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Se la modifica è stata effettuata con successo...
+                if (data.success) {
+                    // Aggiorna il testo del post nella pagina senza ricaricare la pagina
+                    if (nuovoContenuto.trim() !== "") {
+                        document.querySelector(`.card-text[data-id="${postId}"]`).innerText = nuovoContenuto;
+                    };
+                    if (nuovoTitolo.trim() !== "") {
+                        document.querySelector(`.card-title[data-id="${postId}"]`).innerText = nuovoTitolo;
+                    }
+                } else {
+                    console.error("Errore durante la modifica del post:", data.message);
+                }
+            })
+            .catch(error => {
+                console.error("Errore durante la richiesta di modifica del post:", error);
+            })
+        }
+    }
+
+    function eliminaPost(postId) {
+    // Effettua una richiesta POST per eliminare il post dal server
+    //const conferma = window.confirm("Sei sicuro di voler eliminare questo post?");
+
+    // Se l'utente conferma...
+    if (true) {
+        console.log("post: "+postId)
+        fetch('/elimina-post', {
+            method: 'POST',
+            body: JSON.stringify({ postId: postId }),
+            headers: {'Content-Type': 'application/json'}
+        })
+        .then(response => {
+            // Se la risposta è ok...
+            if (!response.ok) {
+                throw new Error('Errore nella richiesta.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Se l'eliminazione è stata effettuata con successo...
+            if (data.success) {
+                // Rimuovi il post dalla pagina senza ricaricare la pagina
+                const postElement = document.querySelector(`.card[data-id="${postId}"]`);
+                if (postElement) {
+                    postElement.remove();
+                    //document.querySelector(`.card-text[data-id="${postId}"]`).innerText = nuovoContenuto;
+                }
+            } else {
+                console.error("Errore durante l'eliminazione del post:", data.message);
+            }
+        })
+        .catch(error => {
+            console.error("Errore durante la richiesta di eliminazione del post:", error);
+        });
+    }
+}
+
+
+</script>

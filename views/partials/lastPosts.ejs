@@ -1,0 +1,21 @@
+<div class="lastPostsContainer">
+    <h2>Ultimi Post</h2>
+    <!-- if post have some content... -->
+    <% if (posts) { %>
+        <div class="post-container">
+            <% posts.forEach(function(element) { %>
+                <!-- for each value of the array if there is something then create a post section -->
+                <% if (element.content != ''){ %>
+                <div class="post boxShadow">
+                    <% if (element.topTopicQueryResult !== undefined) {%>                   
+                        <h2> <%= element.title + "🔝" %></h2>
+                        <%} else { %>
+                            <h2> <%= element.title%></h2>
+                        <% } %>
+                    <p><%= element.content %></p>
+                </div>    
+            <% } %>
+            <% }); %>
+        </div>
+    <% } %>
+</div>

@@ -1,0 +1,27 @@
+<h2>Last Posts</h2>
+<% if (posts) { %>
+    <div class="card-header">
+        <!-- Per ogni elemento nell'array dei post... -->
+        <% posts.forEach(function(element) { %>
+            <!-- Se l'elemento ha del contenuto... -->
+            <% if (element.content != ''){ %>
+                <!-- Crea una sezione per il post -->
+                <div class="card" style="margin-top: 5%;">
+                    <div class="card-body">
+                        <!-- Aggiungi un'icona "🔝" se il post è un top topic -->
+                        <% if (element.topTopicQueryResult !== undefined) {%>             
+                            <h2 class="card-title"> <%= element.title + "🔝" %></h2>
+                        <%} else { %>
+                            <h2 class="card-title"> <%= element.title%></h2>
+                        <% } %>
+                        <!-- Contenuto del post -->
+                        <p class="card-text" data-id="<%= element.id %>"><%= element.content %></p>
+                        <span class="text-end">
+                            <p>By: <%= element.owner %></p>
+                        </span>
+                    </div>
+                </div>    
+            <% } %>
+        <% }); %>
+    </div>
+<% } %>
